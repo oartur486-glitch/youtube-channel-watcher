@@ -1,0 +1,38 @@
+name: YouTube Shorts Watcher 24/7
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+concurrency:
+  group: youtube-shorts-watcher
+  cancel-in-progress: true
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+
+    steps:
+      - name: Скачивание кода репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Установка Playwright и браузера Chromium
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Запуск цикла просмотра (до 345 минут)
+        env:
+          PROXY_LIST: ${{ secrets.PROXY_LIST }}
+          YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          python -u Youtube_Channel_Watcher.py --headless --mute --shuffle --max-session-minutes 345
